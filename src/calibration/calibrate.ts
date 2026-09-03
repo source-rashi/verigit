@@ -23,8 +23,12 @@ export async function runCalibration(
 ): Promise<CalibrationScores> {
 	const cases = options.locked ? lockedCases : devCases;
 	const predictions: JudgeOutput[] = [];
-	for (const calibrationCase of cases) {
+	for (const [index, calibrationCase] of cases.entries()) {
+		console.error(`case ${index + 1}/${cases.length}...`);
 		predictions.push(await judgeClaim(calibrationCase.claim, calibrationCase.stats));
+		if (index < cases.length - 1) {
+			await delay(300);
+		}
 	}
 
 	return scoreCalibration(cases, predictions, options.locked ? "locked" : "dev");
@@ -108,4 +112,8 @@ export function formatCalibrationScores(scores: CalibrationScores): string {
 		"Failure-mode agreement:",
 		...Object.entries(scores.failureModeAgreement).map(([mode, score]) => `  ${mode}: ${score}`),
 	].join("\n") + "\n";
+}
+
+function delay(milliseconds: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
