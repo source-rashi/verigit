@@ -1,2 +1,4 @@
+import { describe } from "vitest";
+
 // Citation validation coverage belongs to Week 2.
-export {};
+describe.skip("citation validation", () => {});
