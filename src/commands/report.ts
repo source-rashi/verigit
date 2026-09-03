@@ -38,7 +38,7 @@ export function runReport(options: ReportOptions): string {
 	const latestSha = currentCommits[0]?.sha ?? null;
 	const cachePath = join(options.cwd ?? process.cwd(), ".repowise", "stats-cache.json");
 	const cached = readStatsCache(latestSha, cachePath);
-	if (cached) {
+	if (cached && cached.range.since === options.since) {
 		return formatStats(cached, options.format);
 	}
 
