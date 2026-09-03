@@ -26,6 +26,7 @@ Stats JSON:
 
 export interface DigestOptions {
 	config?: AppConfig;
+	repairContext?: string;
 }
 
 export async function generateDigest(
@@ -37,7 +38,8 @@ export async function generateDigest(
 	const prompt = DIGEST_PROMPT_TEMPLATE
 		.replace("{{RANGE_SINCE}}", validatedStats.range.since)
 		.replace("{{RANGE_UNTIL}}", validatedStats.range.until)
-		.replace("{{STATS_JSON}}", JSON.stringify(validatedStats, null, 2));
+		.replace("{{STATS_JSON}}", JSON.stringify(validatedStats, null, 2))
+		.concat(options.repairContext ? `\n\nRepair requirements:\n${options.repairContext}` : "");
 	const client = new Groq({ apiKey: config.groqApiKey, timeout: 45_000 });
 
 	try {
