@@ -24,6 +24,13 @@ Metric definitions:
 - Percentage comparisons are exact reported deltas and must not be confused with raw metric values.
 - A claim about causation, intent, quality, productivity, performance, or business impact is unsupported unless the evidence explicitly contains that fact.
 
+Failure-mode precedence and distinctions:
+- Use overgeneralization when a claim takes a supported, bounded repository fact and extends it with universal or exhaustive language such as "every", "all", "entire", "only", or "the whole team". Knowing that src/api.ts is the top churned file does not support "every changed file was src/api.ts" or "the three contributors worked on every file". These are overgeneralizations, not merely insufficient evidence.
+- Use insufficient_evidence when the claim introduces a specific fact or topic for which the evidence provides no meaningful corresponding fact at all, such as a claim about authentication work, seniority, or a security fix.
+- Use temporal_error when a claim assigns a current-period value to the previous period, assigns a previous-period value to the current period, uses the wrong reporting range, or refers to a future or next period. When a number exists in the evidence but is attributed to the wrong period, prefer temporal_error over misinterpretation or unsupported_claim.
+- The current period is represented by the top-level aggregate fields. The previous period is represented by comparison.previous. The range field identifies the reporting window. Do not transfer values between these scopes.
+- Use unsupported_claim only when the claim makes a repository assertion with no relevant numerical, file, range, or comparison anchor in the evidence.
+
 Judge the claim against the evidence exactly. Do not reward claims merely because they sound plausible. Do not infer facts that are absent. If the claim is aligned, set failureMode to null. If it is not aligned, select the single most appropriate failure mode:
 - misinterpretation: the evidence is used as the wrong metric or meaning
 - overgeneralization: a narrow fact is expanded beyond what the evidence supports
