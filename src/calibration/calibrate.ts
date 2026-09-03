@@ -31,6 +31,26 @@ export async function runCalibration(
 		}
 	}
 
+	for (const [index, calibrationCase] of cases.entries()) {
+		const predicted = predictions[index];
+		if (
+			calibrationCase.expected.aligned !== predicted.aligned ||
+			calibrationCase.expected.failureMode !== predicted.failureMode
+		) {
+			console.error(JSON.stringify({
+				mismatch: true,
+				id: calibrationCase.id,
+				claim: calibrationCase.claim,
+				expectedAligned: calibrationCase.expected.aligned,
+				expectedFailureMode: calibrationCase.expected.failureMode,
+				actualAligned: predicted.aligned,
+				actualFailureMode: predicted.failureMode,
+				confidence: predicted.confidence,
+				reviewRequired: predicted.reviewRequired,
+			}));
+		}
+	}
+
 	return scoreCalibration(cases, predictions, options.locked ? "locked" : "dev");
 }
 
