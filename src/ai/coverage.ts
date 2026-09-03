@@ -10,6 +10,7 @@ const requiredFacts = [
 	"activeContributors",
 	"filesTouched",
 	"netLinesChanged",
+	"periodRange",
 ] as const;
 
 export function checkCoverage(
@@ -17,7 +18,9 @@ export function checkCoverage(
 	digestText: string,
 ): CoverageResult {
 	const missingFacts = requiredFacts.filter(
-		(fact) => !hasAggregateFact(stats, digestText, fact),
+		(fact) => fact === "periodRange"
+			? !hasPeriodRange(stats, digestText)
+			: !hasAggregateFact(stats, digestText, fact),
 	) as string[];
 
 	if (stats.topChurnedFiles.length > 0) {
@@ -64,9 +67,32 @@ function hasAggregateFact(
 }
 
 function numberPattern(value: number): string {
-	return escapeRegExp(value.toLocaleString("en-US"));
+	const plain = String(value);
+	const formatted = value.toLocaleString("en-US");
+	return plain === formatted
+		? escapeRegExp(plain)
+		: `(?:${escapeRegExp(plain)}|${escapeRegExp(formatted)})`;
 }
 
 function escapeRegExp(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function hasPeriodRange(stats: StatsOutput, digestText: string): boolean {
+	const since = stats.range.since.trim();
+	const until = stats.range.until.trim();
+	if (digestText.includes(since) && digestText.includes(until)) {
+		return true;
+	}
+
+	const duration = /^(\d+)([dhw])$/.exec(since);
+	if (!duration || !digestText.includes(until)) {
+		return false;
+	}
+
+	const [, amount, unit] = duration;
+	const unitName = { d: "day", h: "hour", w: "week" }[unit as "d" | "h" | "w"];
+	return new RegExp(`(?:last|past|previous)\\s+${amount}\\s+${unitName}s?`, "i").test(
+		digestText,
+	);
 }
