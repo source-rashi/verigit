@@ -54,7 +54,7 @@ export async function judgeClaim(
 ): Promise<JudgeOutput> {
 	const validatedStats = statsOutputSchema.parse(stats);
 	const config = options.config ?? loadConfig();
-	const client = new Groq({ apiKey: config.groqApiKey });
+	const client = new Groq({ apiKey: config.groqApiKey, timeout: 45_000 });
 
 	try {
 		const completion = await client.chat.completions.create({

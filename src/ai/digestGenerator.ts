@@ -38,7 +38,7 @@ export async function generateDigest(
 		.replace("{{RANGE_SINCE}}", validatedStats.range.since)
 		.replace("{{RANGE_UNTIL}}", validatedStats.range.until)
 		.replace("{{STATS_JSON}}", JSON.stringify(validatedStats, null, 2));
-	const client = new Groq({ apiKey: config.groqApiKey });
+	const client = new Groq({ apiKey: config.groqApiKey, timeout: 45_000 });
 
 	try {
 		const completion = await client.chat.completions.create({
