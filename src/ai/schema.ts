@@ -44,6 +44,46 @@ export const statsOutputSchema = z.object({
 
 export type StatsSchemaOutput = z.infer<typeof statsOutputSchema>;
 
+export const failureModes = [
+	"misinterpretation",
+	"overgeneralization",
+	"causation_error",
+	"temporal_error",
+	"insufficient_evidence",
+	"unsupported_claim",
+] as const;
+
+export const judgeOutputSchema = z.object({
+	claim: z.string(),
+	aligned: z.boolean(),
+	failureMode: z.enum(failureModes).nullable(),
+	confidence: z.number().min(0).max(1),
+	reviewRequired: z.boolean(),
+}).strict();
+
+export type JudgeOutput = z.infer<typeof judgeOutputSchema>;
+
+export const judgeOutputJsonSchema = {
+	type: "object",
+	additionalProperties: false,
+	required: ["claim", "aligned", "failureMode", "confidence", "reviewRequired"],
+	properties: {
+		claim: { type: "string" },
+		aligned: { type: "boolean" },
+		failureMode: {
+			anyOf: [
+				{
+					type: "string",
+					enum: failureModes,
+				},
+				{ type: "null" },
+			],
+		},
+		confidence: { type: "number", minimum: 0, maximum: 1 },
+		reviewRequired: { type: "boolean" },
+	},
+} as const;
+
 // Keep the runtime schema aligned with the TypeScript contract.
 const statsOutputTypeCheck: StatsOutput = {} as StatsSchemaOutput;
 void statsOutputTypeCheck;
