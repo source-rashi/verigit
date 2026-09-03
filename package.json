@@ -1,9 +1,9 @@
 {
-  "name": "repowise",
+  "name": "verigit",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "repowise": "dist/cli.js"
+    "verigit": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

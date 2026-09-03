@@ -1,2 +1,2 @@
-// Commander entry point for the repowise CLI.
+// Commander entry point for the verigit CLI.
 export {};
