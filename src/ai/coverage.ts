@@ -12,16 +12,17 @@ const requiredFacts = [
 	"netLinesChanged",
 	"periodRange",
 ] as const;
+type AggregateFact = Exclude<(typeof requiredFacts)[number], "periodRange">;
 
 export function checkCoverage(
 	stats: StatsOutput,
 	digestText: string,
 ): CoverageResult {
-	const missingFacts = requiredFacts.filter(
+	const missingFacts: string[] = requiredFacts.filter(
 		(fact) => fact === "periodRange"
 			? !hasPeriodRange(stats, digestText)
 			: !hasAggregateFact(stats, digestText, fact),
-	) as string[];
+	);
 
 	if (stats.topChurnedFiles.length > 0) {
 		const topFile = stats.topChurnedFiles[0].path;
@@ -40,7 +41,7 @@ export function checkCoverage(
 function hasAggregateFact(
 	stats: StatsOutput,
 	digestText: string,
-	fact: (typeof requiredFacts)[number],
+	fact: AggregateFact,
 ): boolean {
 	const value = {
 		totalCommits: stats.totalCommits,
