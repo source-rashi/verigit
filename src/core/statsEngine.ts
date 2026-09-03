@@ -53,6 +53,14 @@ export function computeStats(
 ): StatsOutput {
 	const current = summarize(commits);
 	const previous = summarize(previousCommits);
+	const previousStats: PreviousPeriodStats = {
+		totalCommits: previous.totalCommits,
+		activeContributors: previous.activeContributors,
+		filesTouched: previous.filesTouched,
+		linesAdded: previous.linesAdded,
+		linesDeleted: previous.linesDeleted,
+		netLinesChanged: previous.netLinesChanged,
+	};
 
 	return {
 		range: {
@@ -62,7 +70,7 @@ export function computeStats(
 		...current,
 		topChurnedFiles: current.topChurnedFiles,
 		comparison: {
-			previous,
+			previous: previousStats,
 			commitsChangePercent: percentChange(current.totalCommits, previous.totalCommits),
 			contributorsChangePercent: percentChange(
 				current.activeContributors,
