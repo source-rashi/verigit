@@ -134,5 +134,11 @@ const allCases: CalibrationCase[] = [
 	misaligned("causation_error-06", "The 300 net lines guarantee the release was successful.", "causation_error"),
 ];
 
-export const devCases = allCases.slice(0, 30);
+const additionalDevCases: CalibrationCase[] = [
+	misaligned("unsupported_claim-dev-01", "The team completed a successful release.", "unsupported_claim"),
+	misaligned("unsupported_claim-dev-02", "The repository's architecture is now easier to maintain.", "unsupported_claim"),
+	misaligned("unsupported_claim-dev-03", "The contributors coordinated effectively during this period.", "unsupported_claim"),
+];
+
+export const devCases = allCases.slice(0, 30).concat(additionalDevCases);
 export const lockedCases = allCases.slice(30, 50);
