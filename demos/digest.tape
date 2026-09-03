@@ -1,0 +1,1 @@
+# VHS recording for the digest README demo will be added during Week 3.
