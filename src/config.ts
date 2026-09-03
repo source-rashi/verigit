@@ -2,6 +2,7 @@ import "dotenv/config";
 
 export interface AppConfig {
 	groqApiKey: string;
+	groqModel: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -12,5 +13,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 		);
 	}
 
-	return { groqApiKey };
+	return {
+		groqApiKey,
+		groqModel: env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b",
+	};
 }
