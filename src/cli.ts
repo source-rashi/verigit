@@ -27,8 +27,18 @@ program
 	.command("digest")
 	.description("Generate an AI activity digest")
 	.option("--since <period>", "include commits from this period", "7d")
-	.action(async (options: { since: string }) => {
-		process.stdout.write(await runDigest({ since: options.since }));
+	.option("--strict", "validate citations, coverage, and semantic alignment")
+	.option("--min-coverage <score>", "minimum required fact coverage", "0.8")
+	.action(async (options: { since: string; strict?: boolean; minCoverage: string }) => {
+		const minCoverage = Number(options.minCoverage);
+		if (!Number.isFinite(minCoverage) || minCoverage < 0 || minCoverage > 1) {
+			throw new Error("--min-coverage must be a number between 0 and 1.");
+		}
+		process.stdout.write(await runDigest({
+			since: options.since,
+			strict: options.strict === true,
+			minCoverage,
+		}));
 		process.stdout.write("\n");
 	});
 
