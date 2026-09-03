@@ -13,6 +13,7 @@ Rules:
 - Do not infer code quality, developer performance, intent, causation, or business impact.
 - Treat total commits as an activity count, not a quality signal.
 - State numbers exactly as given in the stats JSON — do not round, estimate, or approximate any figure.
+- Do not use ranges, grouping, or comparative phrases in place of exact figures.
 - You may mention changes compared with the previous period only when the comparison values are present.
 - Do not mention commit messages, diffs, files beyond the provided top churned files, or any information not present in the stats.
 - Return plain text only. Do not use headings, bullets, JSON, or markdown.
@@ -41,7 +42,9 @@ export async function generateDigest(
 			model: config.groqModel,
 			messages: [{ role: "user", content: prompt }],
 			temperature: 0.2,
-			max_tokens: 300,
+			reasoning_effort: "low",
+			include_reasoning: false,
+			max_completion_tokens: 500,
 		});
 		const content = completion.choices[0]?.message?.content;
 		if (!content || typeof content !== "string") {
