@@ -1,47 +1,47 @@
 name: Locked calibration evaluation
 
 on:
-	workflow_dispatch:
-	workflow_call:
-		secrets:
-			GROQ_API_KEY:
-				required: true
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      GROQ_API_KEY:
+        required: true
 
 permissions:
-	contents: read
+  contents: read
 
 jobs:
-	evaluate:
-		runs-on: ubuntu-latest
-		env:
-			GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-		steps:
-			- name: Check out repository
-			  uses: actions/checkout@v4
-			- name: Set up Node.js
-			  uses: actions/setup-node@v4
-			  with:
-					node-version: 20
-					cache: npm
-			- name: Install dependencies
-			  run: npm ci
-			- name: Run locked calibration and enforce thresholds
-			  run: |
-				 node --import tsx --input-type=module <<'NODE'
-				 import { runCalibration } from './src/calibration/calibrate.ts';
+  evaluate:
+    runs-on: ubuntu-latest
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run locked calibration and enforce thresholds
+        run: |
+          node --import tsx --input-type=module <<'NODE'
+          import { runCalibration } from './src/calibration/calibrate.ts';
 
-				 const scores = await runCalibration({ locked: true });
-				 console.log(JSON.stringify(scores, null, 2));
-				 const minimumAccuracy = 0.90;
-				 const minimumF1 = 0.90;
-				 const maximumFalsePositiveRate = 0.05;
-				 const failures = [];
-				 if (scores.accuracy < minimumAccuracy) failures.push(`accuracy ${scores.accuracy} < ${minimumAccuracy}`);
-				 if (scores.f1 < minimumF1) failures.push(`F1 ${scores.f1} < ${minimumF1}`);
-				 if (scores.falsePositiveRate > maximumFalsePositiveRate) failures.push(`FPR ${scores.falsePositiveRate} > ${maximumFalsePositiveRate}`);
-				 if (failures.length > 0) {
-					console.error(`Locked calibration failed: ${failures.join('; ')}`);
-					process.exit(1);
-				 }
-				 console.log('Locked calibration passed.');
-			 NODE
+          const scores = await runCalibration({ locked: true });
+          console.log(JSON.stringify(scores, null, 2));
+          const minimumAccuracy = 0.90;
+          const minimumF1 = 0.90;
+          const maximumFalsePositiveRate = 0.05;
+          const failures = [];
+          if (scores.accuracy < minimumAccuracy) failures.push(`accuracy ${scores.accuracy} < ${minimumAccuracy}`);
+          if (scores.f1 < minimumF1) failures.push(`F1 ${scores.f1} < ${minimumF1}`);
+          if (scores.falsePositiveRate > maximumFalsePositiveRate) failures.push(`FPR ${scores.falsePositiveRate} > ${maximumFalsePositiveRate}`);
+          if (failures.length > 0) {
+            console.error(`Locked calibration failed: ${failures.join('; ')}`);
+            process.exit(1);
+          }
+          console.log('Locked calibration passed.');
+          NODE
