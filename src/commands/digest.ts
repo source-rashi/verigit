@@ -1,5 +1,5 @@
 import { generateDigest } from "../ai/digestGenerator.js";
-import { judgeClaim } from "../ai/semantic-judge.js";
+import { judgeDigest } from "../ai/semantic-judge.js";
 import { repairDigest } from "../ai/repair.js";
 import { validateDigest, type DigestValidationResult } from "../ai/validation.js";
 import type { JudgeOutput } from "../ai/schema.js";
@@ -71,11 +71,7 @@ async function evaluateDigest(
 	digestText: string,
 ): Promise<StrictEvaluation> {
 	const validation = validateDigest(stats, digestText);
-	const claims = digestText
-		.split(/(?<=[.!?])\s+/)
-		.map((claim) => claim.trim())
-		.filter(Boolean);
-	const verdicts = await Promise.all(claims.map((claim) => judgeClaim(claim, stats)));
+	const verdicts = (await judgeDigest(digestText, stats)).verdicts;
 	return {
 		validation,
 		semanticFailures: verdicts.filter((verdict) => !verdict.aligned || verdict.reviewRequired),

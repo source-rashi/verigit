@@ -4,7 +4,10 @@ import { loadConfig, type AppConfig } from "../config.js";
 import {
 	judgeOutputJsonSchema,
 	judgeOutputSchema,
+	digestJudgeOutputJsonSchema,
+	digestJudgeOutputSchema,
 	statsOutputSchema,
+	type DigestJudgeOutput,
 	type JudgeOutput,
 } from "./schema.js";
 
@@ -44,6 +47,16 @@ Judge the claim against the evidence exactly. Do not reward claims merely becaus
 Set confidence to a number from 0 to 1. Set reviewRequired to true when the judgment is materially uncertain or the claim should receive human review.
 
 Return only the required structured JSON verdict.`;
+
+export const DIGEST_SEMANTIC_JUDGE_PROMPT = `${SEMANTIC_JUDGE_SYSTEM_PROMPT}
+
+Judge the complete candidate digest as a single response. Identify each distinct factual sentence or clause in the digest and return exactly one verdict for each. Preserve the claim text in each verdict. Do not omit a factual claim, merge unrelated claims, or add claims that are not present in the digest.
+
+Candidate digest:
+{{DIGEST_TEXT}}
+
+Structured stats evidence:
+{{STATS_JSON}}`;
 
 export interface JudgeOptions {
 	config?: AppConfig;
@@ -93,5 +106,52 @@ export async function judgeClaim(
 		}
 		const message = error instanceof Error ? error.message : String(error);
 		throw new Error(`Unable to judge claim with Groq: ${message}`);
+	}
+}
+
+export async function judgeDigest(
+	digestText: string,
+	stats: StatsOutput,
+	options: JudgeOptions = {},
+): Promise<DigestJudgeOutput> {
+	const validatedStats = statsOutputSchema.parse(stats);
+	const config = options.config ?? loadConfig();
+	const client = new Groq({ apiKey: config.groqApiKey, timeout: 45_000 });
+	const prompt = DIGEST_SEMANTIC_JUDGE_PROMPT
+		.replace("{{DIGEST_TEXT}}", digestText)
+		.replace("{{STATS_JSON}}", JSON.stringify(validatedStats, null, 2));
+
+	try {
+		const completion = await client.chat.completions.create({
+			model: config.groqModel,
+			messages: [
+				{ role: "system", content: SEMANTIC_JUDGE_SYSTEM_PROMPT },
+				{ role: "user", content: prompt },
+			],
+			temperature: 0,
+			reasoning_effort: "low",
+			include_reasoning: false,
+			max_completion_tokens: 500,
+			response_format: {
+				type: "json_schema",
+				json_schema: {
+					name: "digest_judge_verdict",
+					strict: true,
+					schema: digestJudgeOutputJsonSchema,
+				},
+			},
+		});
+		const content = completion.choices[0]?.message?.content;
+		if (!content || typeof content !== "string") {
+			throw new Error("Groq returned an empty digest judge verdict.");
+		}
+
+		return digestJudgeOutputSchema.parse(JSON.parse(content));
+	} catch (error) {
+		if (error instanceof Error && error.message === "Groq returned an empty digest judge verdict.") {
+			throw error;
+		}
+		const message = error instanceof Error ? error.message : String(error);
+		throw new Error(`Unable to judge digest with Groq: ${message}`);
 	}
 }

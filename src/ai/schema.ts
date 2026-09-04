@@ -63,6 +63,12 @@ export const judgeOutputSchema = z.object({
 
 export type JudgeOutput = z.infer<typeof judgeOutputSchema>;
 
+export const digestJudgeOutputSchema = z.object({
+	verdicts: z.array(judgeOutputSchema).min(1),
+}).strict();
+
+export type DigestJudgeOutput = z.infer<typeof digestJudgeOutputSchema>;
+
 export const judgeOutputJsonSchema = {
 	type: "object",
 	additionalProperties: false,
@@ -81,6 +87,19 @@ export const judgeOutputJsonSchema = {
 		},
 		confidence: { type: "number", minimum: 0, maximum: 1 },
 		reviewRequired: { type: "boolean" },
+	},
+} as const;
+
+export const digestJudgeOutputJsonSchema = {
+	type: "object",
+	additionalProperties: false,
+	required: ["verdicts"],
+	properties: {
+		verdicts: {
+			type: "array",
+			minItems: 1,
+			items: judgeOutputJsonSchema,
+		},
 	},
 } as const;
 
