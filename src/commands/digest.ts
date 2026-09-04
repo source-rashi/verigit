@@ -32,22 +32,32 @@ async function runStrictValidation(
 ): Promise<string> {
 	const initial = await evaluateDigest(stats, initialDigest);
 	if (passesStrictValidation(initial, minCoverage)) {
+		console.error("validation passed, printing original digest");
 		return initialDigest;
 	}
 
-	const repairedDigest = await repairDigest({
-		stats,
-		digestText: initialDigest,
-		validation: initial.validation,
-		semanticFailures: initial.semanticFailures,
-	});
+	console.error("validation failed, attempting repair");
+	let repairedDigest: string;
+	try {
+		repairedDigest = await repairDigest({
+			stats,
+			digestText: initialDigest,
+			validation: initial.validation,
+			semanticFailures: initial.semanticFailures,
+		});
+	} catch (error) {
+		console.error("repair failed validation, rejecting");
+		throw error;
+	}
 	const repaired = await evaluateDigest(stats, repairedDigest);
 	if (!passesStrictValidation(repaired, minCoverage)) {
+		console.error("repair failed validation, rejecting");
 		throw new Error(
 			`Digest failed strict validation after one repair attempt. Missing facts: ${repaired.validation.missingFacts.join(", ") || "none"}; unverified numbers: ${repaired.validation.unverifiedNumbers.join(", ") || "none"}.`,
 		);
 	}
 
+	console.error("repair succeeded, printing repaired digest");
 	return repairedDigest;
 }
 
