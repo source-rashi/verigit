@@ -1,6 +1,5 @@
 Output demos/digest.gif
 
-Set Shell powershell
 Set FontSize 16
 Set Width 1100
 Set Height 650
