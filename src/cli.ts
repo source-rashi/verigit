@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { Command } from "commander";
 import { runDigest } from "./commands/digest.js";
 import { runReport } from "./commands/report.js";
